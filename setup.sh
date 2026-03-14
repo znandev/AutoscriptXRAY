@@ -67,27 +67,25 @@ if ! dpkg -s $headerpkg >/dev/null 2>&1; then
   apt install -y $headerpkg
 fi
 
-# Pilih Domain
+# Setup Domain
 clear
 echo -e "$blue========= DOMAIN SETUP =========$NC"
-echo "1. Gunakan Domain Acak (Cloudflare API)"
-echo "2. Masukkan Domain Sendiri"
-echo -n "Pilih [1/2]: "; read domopt
-if [[ "$domopt" == "1" ]]; then
-  wget -q https://raw.githubusercontent.com/givpn/AutoScriptXray/master/ssh/cf && chmod +x cf && ./cf
-elif [[ "$domopt" == "2" ]]; then
-  read -rp "Masukkan domain kamu: " domain
-  echo "$domain" > /root/domain
-  for dfile in domain scdomain; do
-    echo "$domain" > /etc/xray/$dfile
-    echo "$domain" > /etc/v2ray/$dfile
-    echo "$domain" > /root/$dfile
-  done
-  echo "IP=$domain" > /var/lib/ipvps.conf
-else
-  error "Pilihan tidak valid"
-  exit 1
-fi
+echo ""
+read -rp "Masukkan domain kamu: " domain
+
+echo "$domain" > /root/domain
+
+for dfile in domain scdomain; do
+  echo "$domain" > /etc/xray/$dfile
+  echo "$domain" > /etc/v2ray/$dfile
+  echo "$domain" > /root/$dfile
+done
+
+echo "IP=$domain" > /var/lib/ipvps.conf
+
+echo ""
+echo -e "Domain berhasil diset: $domain"
+sleep 2
 
 # Eksekusi Installer per Fitur
 info "Menjalankan installer XRAY..."
