@@ -1,11 +1,25 @@
 
-# Autoscript VPN Tunneling 
+# Autoscript XRAY 
 
 AutoScript VPN all-in-one 
-Script modular dan interaktif untuk install protokol VPN lengkap: **XRAY (VMess, VLess, Trojan, Shadowsocks), WireGuard**, dan berbagai tools DevOps + monitoring.
+Script modular dan interaktif untuk install protokol VPN lengkap dengan panel: **XRAY (VMess, VLess, Trojan, Shadowsocks), WireGuard**, dan berbagai tools DevOps + monitoring.
 
 ---
+## Fitur Utama
 
+- XRAY: Vmess, Vless, Trojan, Shadowsocks (WS + gRPC)
+- WireGuard VPN
+- Installer WebSocket custom
+- Menu interaktif per protokol
+- Tools tambahan: Backup, Domain, Speedtest
+- Setup domain random/manual
+
+---
+## Screenshot
+![img1](./img/screenshot01.png)
+
+
+---
 ## Quick Install
 ```bash
 # 1. Install dependensi dasar
@@ -24,22 +38,6 @@ chmod +x setup.sh
 chmod +x uninstall.sh
 screen -S setup ./setup.sh
 ```
-
----
-
-## Fitur Utama
-
-- XRAY: Vmess, Vless, Trojan, Shadowsocks (WS + gRPC)
-- WireGuard VPN
-- Installer WebSocket custom
-- Menu interaktif per protokol
-- Tools tambahan: Backup, Domain, Speedtest
-- Setup domain random/manual
-
----
-## Screenshot
-![img1](./img/screenshot01.png)
-
 ---
 ## Struktur Direktori
 
