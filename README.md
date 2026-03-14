@@ -35,7 +35,6 @@ screen -S setup ./setup.sh
 - Menu interaktif per protokol
 - Tools tambahan: Backup, Domain, Speedtest
 - Setup domain random/manual
-- Autostart menu saat login VPS
 
 ---
 
