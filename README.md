@@ -16,7 +16,7 @@ sysctl -w net.ipv6.conf.all.disable_ipv6=1
 sysctl -w net.ipv6.conf.default.disable_ipv6=1
 
 # 3. Clone repo dari GitHub
-git clone https://github.com/znand-dev/AutoscriptXRAY.git
+git clone https://github.com/znandev/AutoscriptXRAY.git
 cd AutoscriptXRAY
 
 # 4. Jalankan installer via screen
