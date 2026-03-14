@@ -51,7 +51,7 @@ mkdir -p /etc/xray
   --fullchain-file /etc/xray/cert.crt \
   --ecc
 
-# Deploy config.json gaya GIVPN
+# Deploy config.json ke xray (vmess, vless, trojan)
 cat > /etc/xray/config.json <<EOF
 {
   "log": {
@@ -61,6 +61,7 @@ cat > /etc/xray/config.json <<EOF
   },
 
   "inbounds": [
+
     {
       "port": 443,
       "protocol": "vmess",
@@ -99,7 +100,78 @@ cat > /etc/xray/config.json <<EOF
         }
       },
       "tag": "vmess-nontls"
+    },
+
+
+
+    {
+      "port": 443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "tlsSettings": {
+          "certificates": [
+            {
+              "certificateFile": "/etc/xray/cert.crt",
+              "keyFile": "/etc/xray/private.key"
+            }
+          ]
+        },
+        "wsSettings": {
+          "path": "/vless"
+        }
+      },
+      "tag": "vless-tls"
+    },
+
+    {
+      "port": 80,
+      "protocol": "vless",
+      "settings": {
+        "clients": [],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "none",
+        "wsSettings": {
+          "path": "/vless"
+        }
+      },
+      "tag": "vless-nontls"
+    },
+
+
+
+    {
+      "port": 443,
+      "protocol": "trojan",
+      "settings": {
+        "clients": []
+      },
+      "streamSettings": {
+        "network": "ws",
+        "security": "tls",
+        "tlsSettings": {
+          "certificates": [
+            {
+              "certificateFile": "/etc/xray/cert.crt",
+              "keyFile": "/etc/xray/private.key"
+            }
+          ]
+        },
+        "wsSettings": {
+          "path": "/trojan"
+        }
+      },
+      "tag": "trojan-tls"
     }
+
   ],
 
   "outbounds": [
