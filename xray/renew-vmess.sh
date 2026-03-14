@@ -1,23 +1,61 @@
 #!/bin/bash
-# Perpanjang akun VMess - by znand-dev
 
-read -p "Masukkan username yang ingin diperpanjang: " user
-read -p "Tambah masa aktif (hari): " tambah
+clear
 
-exp_now=$(grep -w "### $user" /etc/xray/config.json | cut -d ' ' -f3)
-if [[ -z "$exp_now" ]]; then
-    echo "❌ Username tidak ditemukan!"
-    exit 1
+BLUE='\033[0;34m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+CONFIG="/etc/xray/config.json"
+
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "\E[44;1;39m            PERPANJANG AKUN VMESS            \E[0m"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+
+echo -e "${CYAN}📋 Daftar User VMess:${NC}"
+echo ""
+
+users=$(jq -r '.inbounds[] | select(.tag=="vmess-tls") | .settings.clients[].email' $CONFIG)
+
+for user in $users
+do
+echo -e " - ${GREEN}$user${NC}"
+done
+
+echo ""
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+read -rp "Masukkan username yang ingin diperpanjang: " user
+
+if ! echo "$users" | grep -w "$user" >/dev/null; then
+echo -e "${RED}User tidak ditemukan!${NC}"
+sleep 2
+m-vmess
+exit
 fi
 
-exp_ts=$(date -d "$exp_now" +%s)
-now_ts=$(date +%s)
-remain_days=$(( (exp_ts - now_ts) / 86400 ))
-total_days=$(( remain_days + tambah ))
-new_exp=$(date -d "$total_days days" +%Y-%m-%d)
+read -rp "Tambahkan masa aktif (hari): " masaaktif
 
-# Update config (ganti tanggal expired)
-sed -i "s/### $user.*/### $user $new_exp/" /etc/xray/config.json
+exp=$(date -d "$masaaktif days" +"%Y-%m-%d")
+
+# update expire comment
+sed -i "s/^#vmess $user .*/#vmess $user $exp/g" /etc/xray/config.json
+
 systemctl restart xray
 
-echo -e "\n✅ Masa aktif akun '$user' diperpanjang hingga $new_exp"
+clear
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "\E[44;1;39m            AKUN BERHASIL DIPERPANJANG       \E[0m"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+echo -e "User      : ${GREEN}$user${NC}"
+echo -e "Expired   : ${GREEN}$exp${NC}"
+echo ""
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+read -n 1 -s -r -p "Tekan apa saja untuk kembali..."
+
+m-vmess
