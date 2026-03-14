@@ -18,6 +18,11 @@ Script modular dan interaktif untuk install protokol VPN lengkap dengan panel: *
 ## Screenshot
 ![img1](./img/screenshot01.png)
 
+Untuk membuka menu
+```bash
+sudo menu
+```
+
 
 ---
 ## Quick Install
