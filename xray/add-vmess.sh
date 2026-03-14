@@ -33,21 +33,33 @@ mv /tmp/config.json $CONFIG
 
 systemctl restart xray
 
+clear
+echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m" | tee -a /etc/log-create-vmess.log
+echo -e "\E[44;1;39m        XRAY VMess ACCOUNT        \E[0m" | tee -a /etc/log-create-vmess.log
+echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m" | tee -a /etc/log-create-vmess.log
+echo -e "Remarks        : ${user}" | tee -a /etc/log-create-vmess.log
+echo -e "Domain         : ${domain}" | tee -a /etc/log-create-vmess.log
+echo -e "Wildcard       : (bug.com).${domain}" | tee -a /etc/log-create-vmess.log
+echo -e "Port TLS       : ${tls}" | tee -a /etc/log-create-vmess.log
+echo -e "Port none TLS  : ${none}" | tee -a /etc/log-create-vmess.log
+echo -e "Port gRPC      : ${tls}" | tee -a /etc/log-create-vmess.log
+echo -e "id             : ${uuid}" | tee -a /etc/log-create-vmess.log
+echo -e "Alter ID       : 0" | tee -a /etc/log-create-vmess.log
+echo -e "Encryption     : auto" | tee -a /etc/log-create-vmess.log
+echo -e "Network        : ws / grpc" | tee -a /etc/log-create-vmess.log
+echo -e "Path           : /vmess" | tee -a /etc/log-create-vmess.log
+echo -e "ServiceName    : vmess-grpc" | tee -a /etc/log-create-vmess.log
+echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m" | tee -a /etc/log-create-vmess.log
+echo -e "Link TLS       : ${vmesslink1}" | tee -a /etc/log-create-vmess.log
+echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m" | tee -a /etc/log-create-vmess.log
+echo -e "Link none TLS  : ${vmesslink2}" | tee -a /etc/log-create-vmess.log
+echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m" | tee -a /etc/log-create-vmess.log
+echo -e "Link gRPC      : ${vmesslink3}" | tee -a /etc/log-create-vmess.log
+echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m" | tee -a /etc/log-create-vmess.log
+echo -e "Expired On     : ${exp}" | tee -a /etc/log-create-vmess.log
+echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m" | tee -a /etc/log-create-vmess.log
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo " XRAY VMESS ACCOUNT"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-echo "User   : $user"
-echo "Domain : $domain"
-echo "UUID   : $uuid"
-echo "Exp    : $exp"
-
-vmesslink="vmess://$(echo -n "{\"v\":\"2\",\"ps\":\"${user}\",\"add\":\"${domain}\",\"port\":\"443\",\"id\":\"${uuid}\",\"aid\":\"0\",\"net\":\"ws\",\"path\":\"/vmess\",\"type\":\"none\",\"host\":\"${domain}\",\"tls\":\"tls\"}" | base64 -w 0)"
-
-echo ""
-echo "VMESS LINK"
-echo "$vmesslink"
-echo ""
+read -n 1 -s -r -p "Tekan apa saja untuk kembali ke menu..."
 
 m-vmess
