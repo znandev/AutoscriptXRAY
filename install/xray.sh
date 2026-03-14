@@ -31,12 +31,13 @@ fi
 
 echo "$domain" > /etc/xray/domain
 
-# Install & issue cert via acme.sh
-if [ ! -f /root/.acme.sh/acme.sh ]; then
+# Install acme.sh
+if [ ! -f ~/.acme.sh/acme.sh ]; then
   echo -e "${GREEN}🔐 Menginstall acme.sh...${NC}"
-  curl https://acme-install.netlify.app/acme.sh | bash
-  export PATH="$HOME/.acme.sh":$PATH
+  curl https://get.acme.sh | sh -s email=admin@$domain
 fi
+
+ACME=~/.acme.sh/acme.sh
 
 chmod +x /root/.acme.sh/acme.sh
 
