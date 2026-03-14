@@ -7,7 +7,7 @@ Script modular dan interaktif untuk install protokol VPN lengkap dengan panel: *
 ---
 ## Fitur Utama
 
-- XRAY: Vmess, Vless, Trojan, Shadowsocks (WS + gRPC)
+- XRAY: Vmess, Vless, Trojan, Shadowsocks (WS + TLS)
 - WireGuard VPN
 - Installer WebSocket custom
 - Menu interaktif per protokol
