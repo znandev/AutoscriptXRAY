@@ -37,7 +37,10 @@ screen -S setup ./setup.sh
 - Setup domain random/manual
 
 ---
+## Screenshot
+![img1](./img/screenshot01.png)
 
+---
 ## Struktur Direktori
 
 ```bash
