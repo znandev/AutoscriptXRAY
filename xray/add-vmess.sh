@@ -1,9 +1,16 @@
 #!/bin/bash
 
 clear
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "       Add VMess User"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+echo -e "\E[44;1;39m        Add VMess Account        \E[0m"
+echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+
+# ambil domain
+domain=$(cat /etc/xray/domain)
+
+# ambil port dari log install
+tls=$(grep -w "XRAY TLS" /root/log-install.txt | cut -d: -f2 | tr -d ' ')
+none=$(grep -w "XRAY None TLS" /root/log-install.txt | cut -d: -f2 | tr -d ' ')
 
 read -rp "Username : " user
 read -rp "Expired (days): " masaaktif
@@ -11,25 +18,22 @@ read -rp "Expired (days): " masaaktif
 uuid=$(cat /proc/sys/kernel/random/uuid)
 exp=$(date -d "$masaaktif days" +"%Y-%m-%d")
 
-domain=$(cat /etc/xray/domain)
-
-CONFIG="/etc/xray/config.json"
-
-# tambah user ke vmess TLS
+# inject user ke config
 jq --arg uuid "$uuid" --arg user "$user" '
-(.inbounds[] | select(.tag=="vmess-tls").settings.clients) += 
+(.inbounds[] | select(.tag=="vmess-tls").settings.clients) +=
+[{"id":$uuid,"alterId":0,"email":$user}] |
+(.inbounds[] | select(.tag=="vmess-nontls").settings.clients) +=
 [{"id":$uuid,"alterId":0,"email":$user}]
-' $CONFIG > /tmp/config.json
+' /etc/xray/config.json > /tmp/config.json
 
-mv /tmp/config.json $CONFIG
+mv /tmp/config.json /etc/xray/config.json
 
-# tambah user ke vmess non TLS
-jq --arg uuid "$uuid" --arg user "$user" '
-(.inbounds[] | select(.tag=="vmess-nontls").settings.clients) += 
-[{"id":$uuid,"alterId":0,"email":$user}]
-' $CONFIG > /tmp/config.json
+# generate vmess link
+vmesslink1="vmess://$(echo -n "{\"v\":\"2\",\"ps\":\"${user}\",\"add\":\"${domain}\",\"port\":\"${tls}\",\"id\":\"${uuid}\",\"aid\":\"0\",\"net\":\"ws\",\"path\":\"/vmess\",\"type\":\"none\",\"host\":\"${domain}\",\"tls\":\"tls\"}" | base64 -w 0)"
 
-mv /tmp/config.json $CONFIG
+vmesslink2="vmess://$(echo -n "{\"v\":\"2\",\"ps\":\"${user}\",\"add\":\"${domain}\",\"port\":\"${none}\",\"id\":\"${uuid}\",\"aid\":\"0\",\"net\":\"ws\",\"path\":\"/vmess\",\"type\":\"none\",\"host\":\"${domain}\",\"tls\":\"none\"}" | base64 -w 0)"
+
+vmesslink3="vmess://${uuid}@${domain}:${tls}?mode=gun&security=tls&type=grpc&serviceName=vmess-grpc&sni=bug.com#${user}"
 
 systemctl restart xray
 
@@ -61,5 +65,4 @@ echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 read -n 1 -s -r -p "Tekan apa saja untuk kembali ke menu..."
-
 m-vmess
