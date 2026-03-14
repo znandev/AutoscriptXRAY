@@ -86,6 +86,10 @@ echo "IP=$domain" > /var/lib/ipvps.conf
 echo ""
 echo -e "Domain berhasil diset: $domain"
 sleep 2
+if [[ -z "$domain" ]]; then
+echo "Domain tidak boleh kosong!"
+exit 1
+fi
 
 # Eksekusi Installer per Fitur
 info "Menjalankan installer XRAY..."
