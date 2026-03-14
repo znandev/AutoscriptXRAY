@@ -59,6 +59,7 @@ cat > /etc/xray/config.json <<EOF
     "error": "/var/log/xray/error.log",
     "loglevel": "warning"
   },
+
   "inbounds": [
     {
       "port": 443,
@@ -83,6 +84,7 @@ cat > /etc/xray/config.json <<EOF
       },
       "tag": "vmess-tls"
     },
+
     {
       "port": 80,
       "protocol": "vmess",
@@ -99,6 +101,7 @@ cat > /etc/xray/config.json <<EOF
       "tag": "vmess-nontls"
     }
   ],
+
   "outbounds": [
     {
       "protocol": "freedom",
