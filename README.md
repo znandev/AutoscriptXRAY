@@ -13,6 +13,7 @@ Script modular dan interaktif untuk install protokol VPN lengkap dengan panel: *
 - Menu interaktif per protokol
 - Tools tambahan: Backup, Domain, Speedtest
 - Setup domain random/manual
+- Friendly UI dengan panel interaktif
 
 ---
 ## Screenshot
@@ -91,9 +92,10 @@ autoscript_znand/
 
 | OS           | Status    |
 |--------------|-----------|
-| Debian 10    | ✅ Supported |
+| Debian 12    | ⭐ Recommended |
 | Debian 11    | ✅ Supported |
-| Ubuntu 20.04 | ✅ Supported |
+| Debian 10    | ❌ Deprecated (EOL)|
+| Ubuntu 20.04 | ⚠️Limited Support |
 | Ubuntu 22.04 | ✅ Supported |
 | OpenVZ       | ❌ Not supported |
 | KVM/VMWare   | ✅ Recommended |
