@@ -9,15 +9,15 @@ else
   domain=$IP
 fi
 
-port_tls=$(cat ~/log-install.txt | grep -w "Shadowsocks WS TLS" | cut -d: -f2 | sed 's/ //g')
-port_none=$(cat ~/log-install.txt | grep -w "Shadowsocks WS none TLS" | cut -d: -f2 | sed 's/ //g')
+port_tls=$(cat ~/log-install.txt | grep -w "XRAY SS WS TLS" | cut -d: -f2 | sed 's/ //g')
+port_none=$(cat ~/log-install.txt | grep -w "XRAY SS WS none TLS" | cut -d: -f2 | sed 's/ //g')
 
 until [[ $user =~ ^[a-zA-Z0-9_]+$ && ${CLIENT_EXISTS} == '0' ]]; do
   echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
   echo -e "\E[44;1;39m     Add Shadowsocks Account     \E[0m"
   echo -e "\033[0;34m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
   read -rp "User: " -e user
-  CLIENT_EXISTS=$(grep -w $user /etc/xray/config.json | wc -l)
+  CLIENT_EXISTS=$(grep -w "\"$user\"" /etc/xray/config.json | wc -l)
 
   if [[ ${CLIENT_EXISTS} == '1' ]]; then
     clear
@@ -37,7 +37,8 @@ uuid=$(cat /proc/sys/kernel/random/uuid)
 read -p "Expired (days): " masaaktif
 exp=$(date -d "$masaaktif days" +"%Y-%m-%d")
 
-sed -i '/#ssws$/a\#& '"$user $exp"'\n},{"password": "'"$uuid"'", "method": "'"$cipher"'", "email": "'"$user"'"' /etc/xray/config.json
+# inject user ke config SS WS (marker: #ssws)
+sed -i 's/#ssws$/#ssws\n#ssws '"$user $exp"'\n    },{"password": "'"$uuid"'", "method": "'"$cipher"'", "email": "'"$user"'"\n#ssws/' /etc/xray/config.json
 
 sslink1="ss://$(echo -n "$cipher:$uuid" | base64 -w0)@$domain:$port_tls?plugin=xray-plugin;path=/ss-ws;host=$domain;tls#${user}"
 sslink2="ss://$(echo -n "$cipher:$uuid" | base64 -w0)@$domain:$port_none?plugin=xray-plugin;path=/ss-ws;host=$domain#${user}"

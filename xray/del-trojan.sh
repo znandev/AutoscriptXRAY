@@ -46,6 +46,9 @@ map(select(.email != $user))
 
 mv /tmp/config.json $CONFIG
 
+# hapus comment expiry
+sed -i "/#trojan $user/d" $CONFIG
+
 systemctl restart xray
 
 echo ""

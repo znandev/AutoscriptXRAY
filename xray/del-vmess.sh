@@ -48,6 +48,9 @@ map(select(.email != $user))
 
 mv /tmp/config.json $CONFIG
 
+# hapus comment expiry
+sed -i "/#vmess $user/d" $CONFIG
+
 systemctl restart xray
 
 echo ""
