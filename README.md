@@ -16,53 +16,15 @@ Dengan panel terminal interaktif modern dan struktur modular production-ready.
 
 ## Features
 
-### SSH Websocket
-
-* OpenSSH
-* Dropbear
-* SSH WS
-* SSH SSL WS
-* Enhanced Payload Support
-* UDP Custom Support
-* BadVPN UDPGW
-
-### XRAY Core
-
-* VMess WS + TLS
-* VLESS WS + TLS
-* Trojan WS + TLS
-* Shadowsocks WS
-* gRPC Support
-* NGINX Reverse Proxy
-* Auto SSL Certificate
-
-### WireGuard
-
-* WireGuard VPN
-* Client Generator
-* QRCode Support
-
-### UDP Tunnel
-
-* UDP Custom
-* ZIVPN UDP
-* BadVPN UDPGW
-
-### Tools
-
-* Backup Menu
-* Domain Menu
-* Speedtest
-* Running Service Checker
-* Traffic Monitor
-
-### UI
-
-* Interactive Terminal Panel
-* Colored Menu
-* Real-time Service Status
-* User Statistics
-* Traffic Statistics
+| Category    | Features                                                                          |
+| ----------- | --------------------------------------------------------------------------------- |
+| SSH WS      | OpenSSH, Dropbear, SSH WS, SSH SSL WS, Enhanced Payload, UDP Custom, BadVPN UDPGW |
+| XRAY Core   | VMess, VLESS, Trojan, Shadowsocks, gRPC, NGINX Reverse Proxy, Auto SSL            |
+| WireGuard   | WireGuard VPN, Client Generator, QR Code                                          |
+| UDP Tunnel  | UDP Custom, ZIVPN UDP, BadVPN UDPGW                                               |
+| Management  | Backup, Domain Manager, Speedtest, Service Checker, Traffic Monitor               |
+| Dashboard   | Interactive Panel, Service Status, User Statistics, Traffic Statistics            |
+| Go Services | Native Dropbear WS, Native Stunnel WS, Multi-Connection Support                   |
 
 ---
 
