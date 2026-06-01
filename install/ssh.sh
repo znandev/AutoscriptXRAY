@@ -44,7 +44,15 @@ echo ""
 echo -e "${GREEN}[INFO] Installing Dropbear...${NC}"
 echo ""
 
-apt remove dropbear -y >/dev/null 2>&1 || true
+systemctl stop dropbear 2>/dev/null || true
+
+apt purge -y \
+    dropbear \
+    dropbear-bin >/dev/null 2>&1 || true
+
+rm -f /usr/sbin/dropbear
+rm -f /usr/bin/dbclient
+rm -f /usr/bin/dropbearkey
 
 cd /tmp || exit
 
@@ -61,6 +69,13 @@ wget -qO dropbear.deb \
 }
 
 dpkg -i dropbear-bin.deb dropbear.deb
+
+DROPBEAR_VER=$(dropbear -V 2>&1)
+
+echo "$DROPBEAR_VER" | grep -q "2019.78" || {
+    echo -e "${RED}[ERROR] Wrong Dropbear installed!${NC}"
+    exit 1
+}
 
 # ================= HOSTKEY =================
 
@@ -197,9 +212,49 @@ systemctl restart udpgw
 systemctl enable udp-custom
 systemctl restart udp-custom
 
+# ================= RECHECK SERVICES ==============
+
+sleep 2
+
+for svc in \
+    ssh \
+    dropbear \
+    ws-dropbear \
+    ws-stunnel \
+    udpgw \
+    udp-custom
+do
+    systemctl is-active --quiet "$svc" || {
+        echo -e "${RED}[ERROR] Service $svc failed!${NC}"
+        exit 1
+    }
+done
+
+# ================= NOLOGIN WS ====================
+
+cat > /etc/profile.d/no-login.sh <<'EOF'
+#!/bin/bash
+
+[[ "$USER" == "root" ]] && return
+
+clear
+echo ""
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo " SSH WS ACCOUNT ONLY"
+echo " SHELL ACCESS DENIED"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""
+
+sleep 2
+
+pkill -9 -u "$USER"
+EOF
+
+chmod +x /etc/profile.d/no-login.sh
+
 # ================= HOLD DROPBEAR =================
 
-apt-mark hold dropbear >/dev/null 2>&1 || true
+apt-mark hold dropbear dropbear-bin >/dev/null 2>&1 || true
 
 # ================= INSTALL LOG =================
 
