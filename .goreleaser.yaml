@@ -1,0 +1,43 @@
+version: 2
+
+project_name: autoscriptxray
+
+builds:
+
+* id: dropbear-ws
+  binary: dropbear-ws
+  main: ./internal/go/dropbear-ws
+  goos:
+
+  * linux
+    goarch:
+  * amd64
+  * arm64
+  * arm
+
+* id: stunnel-ws
+  binary: stunnel-ws
+  main: ./internal/go/stunnel-ws
+  goos:
+
+  * linux
+    goarch:
+  * amd64
+  * arm64
+  * arm
+
+archives:
+
+* id: binaries
+  formats: [tar.gz]
+  name_template: >-
+  {{ .Binary }}-
+  {{ .Os }}-
+  {{ .Arch }}
+
+checksum:
+name_template: checksums.txt
+
+changelog:
+disable: false
+sort: asc
