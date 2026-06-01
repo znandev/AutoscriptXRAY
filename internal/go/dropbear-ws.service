@@ -3,7 +3,7 @@ Description=Go WS Stunnel
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/sshws
+ExecStart=/usr/local/bin/dropbearws
 Restart=always
 RestartSec=3
 

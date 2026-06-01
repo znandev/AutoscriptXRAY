@@ -1,10 +1,6 @@
 #!/bin/bash
 
-# ==========================================
-
 # ZNANDEV XRAY PANEL
-
-# ==========================================
 
 # ================= COLOR =================
 PANEL_VERSION="v2.1.1"
@@ -25,7 +21,6 @@ LOG="/var/log/xray/access.log"
 loading() {
 local text="$1"
 
-```
 echo -ne "${CYAN}➜ ${text}${NC}"
 
 for i in {1..3}; do
@@ -34,23 +29,19 @@ for i in {1..3}; do
 done
 
 echo ""
-```
+
 
 }
 
 type_text() {
-local text="$1"
-local delay="${2:-0.02}"
+    local delay="${2:-0.02}"
 
-```
-while IFS= read -r -n1 char; do
-    printf "%b" "$char"
-    sleep "$delay"
-done <<< "$text"
+    while IFS= read -r -n1 char; do
+        printf "%s" "$char"
+        sleep "$delay"
+    done
 
-echo ""
-```
-
+    echo
 }
 
 # ================= SYSTEM INFO =================
@@ -133,12 +124,20 @@ else
     UDPCUSTOM="${RED}🔴 OFFLINE${NC}"
 fi
 
-SSHWS=$(systemctl is-active ws-dropbear)
+DROPBEARWS=$(systemctl is-active dropbear-ws)
 
-if [[ $SSHWS == "active" ]]; then
-SSHWS="${GREEN}🟢 ONLINE${NC}"
+if [[ $DROPBEARWS == "active" ]]; then
+DROPBEARWS="${GREEN}🟢 ONLINE${NC}"
 else
-SSHWS="${RED}🔴 OFFLINE${NC}"
+DROPBEARWS="${RED}🔴 OFFLINE${NC}"
+fi
+
+STUNNELWS=$(systemctl is-active stunnel-ws)
+
+if [[ $STUNNELWS == "active" ]]; then
+    STUNNELWS="${GREEN}🟢 ONLINE${NC}"
+else
+    STUNNELWS="${RED}🔴 OFFLINE${NC}"
 fi
 
 DROPBEAR=$(systemctl is-active dropbear)
@@ -173,16 +172,12 @@ cut -d':' -f2 | sort -u | wc -l)
 
 clear
 
-echo ""
-type_text $'\033[1;31m⚡ Loading ZNANDEV XRAY PANEL ⚡\033[0m' 0.03
-sleep 0.5
+echo -ne "${RED}"
+printf "⚡ Loading ZNANDEV XRAY PANEL ⚡" | type_text
+echo -e "${NC}"
 
 loading "Loading System Modules"
-loading "Checking NGINX Service"
-loading "Checking XRAY Service"
-loading "Checking WireGuard Service"
-loading "Checking UDP Tunnel"
-loading "Checking SSH WebSocket"
+loading "Checking Services"
 loading "Reading Traffic Database"
 
 echo ""
@@ -193,9 +188,8 @@ clear
 
 # ================= HEADER =================
 
-ececho -e "${CYAN}┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓${NC}"
+echo -e "${CYAN}┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓${NC}"
 echo -e "${CYAN}┃${WHITE}          ⚡ ZNANDEV XRAY PANEL ⚡          ${CYAN}┃${NC}"
-printf "${CYAN}┃${WHITE}             Version %-8s            ${CYAN}┃${NC}\n" "$PANEL_VERSION"
 echo -e "${CYAN}┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛${NC}"
 
 # ================= SYSTEM INFO =================
@@ -218,11 +212,11 @@ echo -e "${YELLOW}└───────────────────�
 
 echo -e "${CYAN}┌──────────────── BANDWIDTH ──────────────────┐${NC}"
 
-printf " ${WHITE}TODAY${NC} : %-10s" "$TODAY"
-printf " ${WHITE}YESTERDAY${NC} : %-10s\n" "$YESTERDAY"
+printf " ${WHITE}TODAY${NC}   : %-10s" "$TODAY"
+printf " ${WHITE}YESTERDAY${NC}  : %-10s\n" "$YESTERDAY"
 
-printf " ${WHITE}MONTH${NC} : %-10s" "$MONTH"
-printf " ${WHITE}TOTAL${NC} : %-10s\n" "$TOTAL_BW"
+printf " ${WHITE}MONTH${NC}   : %-10s" "$MONTH"
+printf " ${WHITE}TOTAL${NC}      : %-10s\n" "$TOTAL_BW"
 
 echo -e "${CYAN}└─────────────────────────────────────────────┘${NC}"
 
@@ -242,16 +236,10 @@ echo -e "${CYAN}└────────────────────�
 
 echo -e "${BLUE}┌──────────────── SERVICE ────────────────────┐${NC}"
 
-printf " ${WHITE}XRAY${NC}       : %-18b" "$XRAY"
-printf " ${WHITE}NGINX${NC} : %-18b\n" "$NGINX"
-
-printf " ${WHITE}DROPBEAR${NC}   : %-18b" "$DROPBEAR"
-printf " ${WHITE}SSH WS${NC} : %-18b\n" "$SSHWS"
-
-printf " ${WHITE}UDP CUSTOM${NC} : %-18b" "$UDPCUSTOM"
-printf " ${WHITE}ZIVPN${NC}  : %-18b\n" "$ZIVPN"
-
-printf " ${WHITE}WIREGUARD${NC} : %-18b\n" "$WG"
+echo -e " ${WHITE}XRAY${NC}      : $XRAY  ${WHITE}NGINX${NC}     : $NGINX     "
+echo -e " ${WHITE}DROPBEAR${NC}  : $DROPBEAR  ${WHITE}WIREGUARD${NC} : $WG        "
+echo -e " ${WHITE}UDP CUSTOM${NC}: $UDPCUSTOM  ${WHITE}UDP ZIVPN${NC} : $ZIVPN     "
+echo -e " ${WHITE}SSH WS${NC}    : $DROPBEARWS ${WHITE}WSS${NC}       : $STUNNELWS "
 
 echo -e "${BLUE}└─────────────────────────────────────────────┘${NC}"
 
