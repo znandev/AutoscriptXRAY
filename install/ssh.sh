@@ -33,6 +33,7 @@ apt install -y \
     python3 \
     screen \
     git \
+    golang-go \
     libtomcrypt1 \
     libtommath1
 
@@ -116,25 +117,41 @@ Restart=always
 WantedBy=multi-user.target
 EOF
 
-# ================= WS DROPBEAR =================
+# ================= BUILD GO WS =================
 
-cp ~/AutoscriptXRAY/sshws/ws-dropbear.py \
-/usr/local/bin/ws-dropbear
+echo ""
+echo -e "${GREEN}[INFO] Building Go WebSocket Services...${NC}"
+echo ""
 
-cp ~/AutoscriptXRAY/sshws/ws-dropbear.service \
-/etc/systemd/system/
+if ! command -v go >/dev/null 2>&1; then
+    apt install -y golang-go
+fi
 
-chmod +x /usr/local/bin/ws-dropbear
+cd ~/AutoscriptXRAY/internal/go || exit 1
 
-# ================= WS STUNNEL =================
+go build -ldflags="-s -w" \
+    -o /usr/local/bin/dropbearws \
+    ./dropbear-ws || {
+    echo -e "${RED}[ERROR] Failed to build sshws${NC}"
+    exit 1
+}
 
-cp ~/AutoscriptXRAY/sshws/ws-stunnel.py \
-/usr/local/bin/ws-stunnel
+go build -ldflags="-s -w" \
+    -o /usr/local/bin/stunnelws \
+    ./stunnel-ws || {
+    echo -e "${RED}[ERROR] Failed to build stunnelws${NC}"
+    exit 1
+}
 
-cp ~/AutoscriptXRAY/sshws/ws-stunnel.service \
-/etc/systemd/system/
+chmod +x /usr/local/bin/dropbearws
+chmod +x /usr/local/bin/stunnelws
 
-chmod +x /usr/local/bin/ws-stunnel
+cp ~/AutoscriptXRAY/internal/go/dropbear-ws.service \
+    /etc/systemd/system/dropbear-ws.service
+
+cp ~/AutoscriptXRAY/internal/go/stunnel-ws.service \
+    /etc/systemd/system/stunnel-ws.service
+
 
 # ================= INSTALL BADVPN UDPGW =================
 
@@ -182,8 +199,8 @@ cp ~/AutoscriptXRAY/sshws/udp-custom.service \
 # ================= PERMISSION =================
 
 chmod 644 /etc/systemd/system/dropbear.service
-chmod 644 /etc/systemd/system/ws-dropbear.service
-chmod 644 /etc/systemd/system/ws-stunnel.service
+chmod 644 /etc/systemd/system/dropbear-ws.service
+chmod 644 /etc/systemd/system/stunnel-ws.service
 chmod 644 /etc/systemd/system/udpgw.service
 chmod 644 /etc/systemd/system/udp-custom.service
 
@@ -200,11 +217,11 @@ systemctl restart ssh
 systemctl enable dropbear
 systemctl restart dropbear
 
-systemctl enable ws-dropbear
-systemctl restart ws-dropbear
+systemctl enable dropbear-ws
+systemctl restart dropbear-ws
 
-systemctl enable ws-stunnel
-systemctl restart ws-stunnel
+systemctl enable stunnel-ws
+systemctl restart stunnel-ws
 
 systemctl enable udpgw
 systemctl restart udpgw
@@ -289,7 +306,7 @@ echo ""
 echo -e "${GREEN}[INFO] Service Status:${NC}"
 
 systemctl --no-pager --type=service | \
-grep -E 'dropbear|ssh|ws|udpgw|udp'
+grep -E 'dropbear|ssh|ws|udpgw|udp|dropbear-ws|stunnel-ws'
 
 echo ""
 dropbear -V
