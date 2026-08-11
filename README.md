@@ -1,18 +1,4 @@
-## Autoscript XRAY
-
-AutoScript VPN all-in-one
-
-Script modular dan interaktif untuk deploy:
-
-* SSH Websocket
-* XRAY Core
-* WireGuard
-* UDP Tunnel
-* Monitoring & Tools
-
-Dengan panel terminal interaktif modern dan struktur modular production-ready.
-
----
+# Autoscript XRAY
 
 ## Features
 
@@ -29,6 +15,8 @@ Dengan panel terminal interaktif modern dan struktur modular production-ready.
 ---
 
 ## Screenshot
+
+![dashboard1](./img/menu.gif)
 
 Open menu:
 
