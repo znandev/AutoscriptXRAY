@@ -1,0 +1,11 @@
+[Unit]
+Description=Jalankan pengecek kuota VMess tiap 5 menit
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+AccuracySec=30s
+Unit=quota-check.service
+
+[Install]
+WantedBy=timers.target
