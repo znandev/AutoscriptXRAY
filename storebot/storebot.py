@@ -33,6 +33,7 @@ from datetime import date, timedelta
 CONFIG_PATH = os.environ.get("STOREBOT_CONFIG", "/etc/storebot/config.env")
 PRICES_PATH = os.environ.get("STOREBOT_PRICES", "/etc/storebot/prices.json")
 DB_PATH = os.environ.get("STOREBOT_DB", "/var/lib/storebot/store.db")
+QRIS_PATH = os.environ.get("STOREBOT_QRIS", "/etc/storebot/qris.png")
 QUOTA_STATE = "/var/lib/panelbot/quota-state.json"
 
 ADD_VMESS = "/etc/autoscriptvpn/xray/add-vmess.sh"
@@ -203,6 +204,27 @@ def send(chat_id, text, markup=None):
         tg("sendMessage", params)
     except Exception:
         traceback.print_exc()
+
+
+def send_photo(chat_id, path, caption):
+    boundary = "----storebot" + str(int(time.time() * 1000))
+    with open(path, "rb") as f:
+        img = f.read()
+    body = b""
+    for name, value in (("chat_id", str(chat_id)), ("caption", caption)):
+        body += f"--{boundary}\r\n".encode()
+        body += f'Content-Disposition: form-data; name="{name}"\r\n\r\n'.encode()
+        body += value.encode() + b"\r\n"
+    body += f"--{boundary}\r\n".encode()
+    body += b'Content-Disposition: form-data; name="photo"; filename="qris.png"\r\n'
+    body += b"Content-Type: image/png\r\n\r\n"
+    body += img + b"\r\n"
+    body += f"--{boundary}--\r\n".encode()
+    req = urllib.request.Request(
+        f"{API}/sendPhoto", data=body,
+        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"})
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        return json.loads(resp.read().decode())
 
 
 def edit(chat_id, msg_id, text, markup=None):
@@ -559,6 +581,13 @@ def topup_invoice(chat_id, user, msg_id, amount):
          f"Nominal: <b>{rp(amount)}</b>\n"
          "Setelah transfer, klik tombol di bawah. Saldo masuk setelah admin menyetujui.",
          kb(rows))
+    if os.path.exists(QRIS_PATH):
+        try:
+            send_photo(chat_id, QRIS_PATH,
+                       f"Scan QRIS ini untuk TopUp {rp(amount)}, lalu klik tombol "
+                       "'Saya Sudah Transfer' di pesan di atas.")
+        except Exception:
+            traceback.print_exc()
 
 
 def topup_paid(chat_id, user, amount):
