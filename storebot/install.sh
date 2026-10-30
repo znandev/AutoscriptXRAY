@@ -8,6 +8,11 @@ install -d /opt/storebot /etc/storebot /var/lib/storebot
 install -m 0644 storebot.py /opt/storebot/storebot.py
 install -m 0644 storebot.service /etc/systemd/system/storebot.service
 
+if [ -f qris.png ]; then
+    install -m 0644 qris.png /etc/storebot/qris.png
+    echo "Gambar QRIS terpasang ke /etc/storebot/qris.png."
+fi
+
 if [ ! -f /etc/storebot/config.env ]; then
     cat > /etc/storebot/config.env <<'EOF'
 BOT_TOKEN=
