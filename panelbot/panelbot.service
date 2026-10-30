@@ -1,0 +1,14 @@
+[Unit]
+Description=Panel Bot Telegram untuk AutoscriptXRAY
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/python3 /opt/panelbot/bot.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
