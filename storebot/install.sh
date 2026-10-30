@@ -19,7 +19,7 @@ fi
 if [ ! -f /etc/storebot/config.env ]; then
     cat > /etc/storebot/config.env <<'EOF'
 BOT_TOKEN=
-ADMIN_IDS=7652113800
+ADMIN_IDS=
 SHOP_NAME=Nexus Vpn
 PAYMENT_INFO=QRIS: (isi nomor/nama QRIS kamu)\nDANA: (isi nomor)\nOVO: (isi nomor)
 EOF
