@@ -70,7 +70,7 @@ Lalu:
 
    ```
    BOT_TOKEN=123456:ABC-DEF...
-   ALLOWED_IDS=7652113800
+   ALLOWED_IDS=1234567890
    ```
 
    File ini hanya ada di VPS (chmod 600) dan **tidak** masuk repo.
