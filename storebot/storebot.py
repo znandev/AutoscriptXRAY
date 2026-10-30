@@ -821,7 +821,7 @@ def handle_message(msg):
             parts = text.split()
             if len(parts) != 2 or not parts[0].isdigit() or not re.fullmatch(r"-?\d+", parts[1]):
                 states[chat_id] = state
-                send(chat_id, "Format salah. Contoh: <code>7652113800 50000</code>. Kirim ulang:")
+                send(chat_id, "Format salah. Contoh: <code>1234567890 50000</code>. Kirim ulang:")
                 return
             target, amount = int(parts[0]), int(parts[1])
             if not get_user(target):
@@ -933,7 +933,7 @@ def handle_callback(cb):
                 admin_decide_reseller(chat_id, msg_id, int(parts[2]), parts[1] == "res_ok")
             elif parts[1] == "credit":
                 states[chat_id] = ("admin_credit", {})
-                edit(chat_id, msg_id, "💰 Kirim format: <code>ID nominal</code>\nContoh: <code>7652113800 50000</code> "
+                edit(chat_id, msg_id, "💰 Kirim format: <code>ID nominal</code>\nContoh: <code>1234567890 50000</code> "
                                       "(nominal negatif untuk mengurangi).", kb([back_row()]))
     except Exception:
         traceback.print_exc()
