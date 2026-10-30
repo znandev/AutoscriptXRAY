@@ -40,7 +40,7 @@ fi
 cp "$CONFIG" "$BACKUP"
 echo "Backup dibuat: $BACKUP"
 
-tmp="$(mktemp)"
+tmp="$(mktemp /tmp/xray-stats-test.XXXXXX.json)"
 jq '
   .stats = (.stats // {})
   | .api = {"tag": "api", "services": ["StatsService"]}
@@ -57,8 +57,9 @@ jq '
       else [] end))
 ' "$CONFIG" > "$tmp"
 
-if ! "$XRAY_BIN" -test -config "$tmp" >/dev/null 2>&1; then
+if ! test_out="$("$XRAY_BIN" -test -config "$tmp" 2>&1)"; then
     echo "Validasi config GAGAL. Config asli tidak diubah."
+    echo "$test_out" | tail -3
     rm -f "$tmp"
     exit 1
 fi
