@@ -3,10 +3,16 @@
 """
 Panel Bot Telegram untuk AutoscriptXRAY (fork Aethernal07/AutoscriptXRAY).
 
-Fitur v1:
-- Buat akun VMess (tombol masa aktif 7/15/30 hari atau custom)
+Fitur:
+- Buat akun VMess (tombol masa aktif 7/15/30 hari atau custom,
+  lalu tombol kuota 100 GB / 500 GB / 1 TB / unlimited)
 - Status server (uptime, RAM, disk, service Xray/NGINX, jumlah akun)
-- Daftar akun VMess
+- Daftar akun VMess + pemakaian kuota
+
+Kuota ditegakkan oleh quota-check.py (systemd timer, 5 menit) yang
+membaca statistik trafik per user dari API Xray dan menonaktifkan
+akun yang melewati kuotanya. State bersama bot <-> checker ada di
+quota_state.py (/var/lib/panelbot/quota-state.json).
 
 Hanya memakai library standar Python 3 (tanpa pip install).
 Token bot dan allowlist ID Telegram dibaca dari /etc/panelbot/config.env
@@ -28,6 +34,9 @@ import time
 import urllib.error
 import urllib.request
 from datetime import date, timedelta
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import quota_state  # noqa: E402
 
 CONFIG_PATH = os.environ.get("PANELBOT_CONFIG", "/etc/panelbot/config.env")
 ADD_VMESS = "/etc/autoscriptvpn/xray/add-vmess.sh"
@@ -122,6 +131,22 @@ def days_markup():
     }
 
 
+def quota_markup():
+    return {
+        "inline_keyboard": [
+            [
+                {"text": "100 GB", "callback_data": "q:100"},
+                {"text": "500 GB", "callback_data": "q:500"},
+                {"text": "1 TB", "callback_data": "q:1024"},
+            ],
+            [
+                {"text": "♾️ Unlimited", "callback_data": "q:0"},
+                {"text": "❌ Batal", "callback_data": "d:cancel"},
+            ],
+        ]
+    }
+
+
 # ---------------------------------------------------------------- helpers
 def clean_ansi(text):
     return ANSI_RE.sub("", text or "")
@@ -171,7 +196,7 @@ def label_link(link):
         return "VMess"
 
 
-def create_vmess(username, days):
+def create_vmess(username, days, quota_bytes=None):
     """Jalankan add-vmess.sh secara non-interaktif. Return (ok, pesan)."""
     try:
         proc = subprocess.run(
@@ -202,11 +227,13 @@ def create_vmess(username, days):
         tail = "\n".join(out.strip().splitlines()[-5:])
         return False, f"Akun tidak terbentuk. Cuplikan output script:\n{tail}"
 
+    quota_state.set_quota(username, quota_bytes)
     exp = rec[0] if rec else (date.today() + timedelta(days=days)).isoformat()
     lines = [
         "✅ Akun VMess dibuat",
         f"Remarks : {username}",
         f"Expired : {exp} ({days} hari)",
+        f"Kuota   : {quota_state.fmt_bytes(quota_bytes)}",
     ]
     dom = ""
     try:
@@ -293,9 +320,22 @@ def account_list():
     users = db_all()
     if not users:
         return "Belum ada akun VMess terdaftar."
+    snap = quota_state.snapshot()
     lines = [f"📋 DAFTAR AKUN VMESS ({len(users)})"]
     for i, (u, exp) in enumerate(users[:50], 1):
-        lines.append(f"{i}. {u} — exp {exp}")
+        rec = snap.get(u)
+        if rec is None:
+            q = ""
+        elif rec.get("disabled"):
+            q = " — ⛔ nonaktif (kuota habis)"
+        elif rec.get("quota") is None:
+            q = " — kuota ∞"
+        else:
+            q = (
+                f" — {quota_state.fmt_bytes(rec.get('used', 0))}"
+                f"/{quota_state.fmt_bytes(rec.get('quota'))}"
+            )
+        lines.append(f"{i}. {u} — exp {exp}{q}")
     if len(users) > 50:
         lines.append(f"… dan {len(users) - 50} akun lain")
     return "\n".join(lines)
@@ -338,11 +378,10 @@ def handle_message(msg):
         if not text.isdigit() or not (1 <= int(text) <= 365):
             send(chat_id, "Masukkan angka hari antara 1–365:")
             return
-        username = st["user"]
-        STATES.pop(chat_id, None)
-        send(chat_id, f"⏳ Membuat akun '{username}' ({text} hari)…")
-        ok, pesan = create_vmess(username, int(text))
-        send(chat_id, pesan, main_menu_markup() if ok else None)
+        st["days"] = int(text)
+        st["step"] = "quota"
+        STATES[chat_id] = st
+        send(chat_id, f"Masa aktif: {text} hari\nPilih batas kuota akun:", quota_markup())
         return
 
     send(chat_id, "Pilih menu:", main_menu_markup())
@@ -389,10 +428,26 @@ def handle_callback(cb):
             send(chat_id, "Ketik masa aktif dalam hari (1–365):")
             return
         days = int(choice)
+        st["days"] = days
+        st["step"] = "quota"
+        STATES[chat_id] = st
+        send(chat_id, f"Masa aktif: {days} hari\nPilih batas kuota akun:", quota_markup())
+        return
+    if data.startswith("q:"):
+        st = STATES.get(chat_id)
+        if not st or "user" not in st or "days" not in st:
+            send(chat_id, "Sesi pembuatan akun sudah berakhir. Mulai lagi dari menu:", main_menu_markup())
+            return
+        gb = int(data[2:])
+        quota_bytes = None if gb == 0 else gb * quota_state.GB
         username = st["user"]
+        days = st["days"]
         STATES.pop(chat_id, None)
-        send(chat_id, f"⏳ Membuat akun '{username}' ({days} hari)…")
-        ok, pesan = create_vmess(username, days)
+        send(
+            chat_id,
+            f"⏳ Membuat akun '{username}' ({days} hari, kuota {quota_state.fmt_bytes(quota_bytes)})…",
+        )
+        ok, pesan = create_vmess(username, days, quota_bytes)
         send(chat_id, pesan, main_menu_markup() if ok else None)
         return
 
