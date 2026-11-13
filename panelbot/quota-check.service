@@ -1,0 +1,8 @@
+[Unit]
+Description=Pengecek kuota VMess panelbot
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/bin/python3 /opt/panelbot/quota-check.py
