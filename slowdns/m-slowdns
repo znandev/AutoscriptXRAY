@@ -3,6 +3,8 @@
 #   Jalankan sebagai root:  m-slowdns
 # Akun yang dibuat = user SSH biasa (dipakai di aplikasi SlowDNS
 # bersama Nameserver + Public key di bawah).
+# Output akun memakai format kartu ala provider SSH (SSH WS/SSL,
+# info host, port, SlowDNS, payload) biar gampang di-share ke pembeli.
 set -euo pipefail
 
 if [ "$(id -u)" -ne 0 ]; then
@@ -21,6 +23,18 @@ NS="$(grep '^Nameserver' /etc/slowdns/info.txt 2>/dev/null | awk '{print $3}')"
 PUBKEY="$(cat /etc/slowdns/server.pub)"
 IP="$(curl -s --max-time 5 ipv4.icanhazip.com 2>/dev/null || hostname -I | awk '{print $1}')"
 DOMAIN="$(cat /etc/xray/domain 2>/dev/null || echo slowaethernal.eu.cc)"
+
+# Lokasi server (kota + ISP) buat info host; fallback = UpCloud SG.
+GEO="$(curl -s --max-time 5 "http://ip-api.com/line/$IP?fields=status,city,isp" 2>/dev/null)"
+if [ "$(echo "$GEO" | sed -n '1p')" = "success" ]; then
+  CITY="$(echo "$GEO" | sed -n '2p')"
+  ISP="$(echo "$GEO" | sed -n '3p')"
+else
+  CITY="Singapore"
+  ISP="UpCloud"
+fi
+[ -z "$CITY" ] && CITY="Singapore"
+[ -z "$ISP" ] && ISP="UpCloud"
 
 clear
 echo "===== BUAT AKUN SLOWDNS ====="
@@ -50,16 +64,45 @@ useradd -M -s /bin/false -e "$expiry" "$username"
 echo "$username:$password" | chpasswd
 
 clear
-echo "===== AKUN SLOWDNS AKTIF ====="
-echo "Server     : $DOMAIN"
-echo "Nameserver : $NS"
-echo "Public key : $PUBKEY"
-echo "-------------------------------"
-echo "Username   : $username"
-echo "Password   : $password"
-echo "Port       : 22"
-echo "Expired    : $expiry ($days hari)"
-echo "-------------------------------"
+echo "============================="
+echo " AKUN SLOWDNS"
+echo "============================="
+echo ""
+echo "[ SSH DETAILS ]"
+echo "-----------------------------"
+echo "SSH WS      : $DOMAIN:80@$username:$password"
+echo "SSH SSL     : $DOMAIN:443@$username:$password"
+echo ""
+echo "[ HOST INFORMATION ]"
+echo "-----------------------------"
+echo "Hostname    : $DOMAIN"
+echo "City        : $CITY"
+echo "ISP         : $ISP"
+echo "Username    : $username"
+echo "Password    : $password"
+echo "Expiry Date : $expiry ($days hari)"
+echo "Quota       : Unlimited"
+echo ""
+echo "[ PORTS ]"
+echo "------------------------------"
+echo "TLS         : 443, 2096"
+echo "Non-TLS     : 80, 2082"
+echo "UDPGW       : 7300"
+echo ""
+echo "[ SLOWDNS ]"
+echo "------------------------------"
+echo "NS          : $NS"
+echo "Pubkey      : $PUBKEY"
+echo "DNS         : $IP:53"
+echo ""
+echo "[ PAYLOAD WS ]"
+echo "------------------------------"
+echo "GET / HTTP/1.1[crlf]Host: [host][crlf]Upgrade: websocket[crlf]Connection: Upgrade[crlf][crlf]"
+echo ""
+echo "[ PAYLOAD WSS ]"
+echo "------------------------------"
+echo "GET wss://[host]/ssh-wss HTTP/1.1[crlf]Host: [host][crlf]Upgrade: websocket[crlf]Connection: Upgrade[crlf][crlf]"
+echo "------------------------------"
 echo "Isi di aplikasi SlowDNS:"
 echo "  Server     : $DOMAIN ($IP)"
 echo "  Nameserver : $NS"
@@ -67,7 +110,8 @@ echo "  Public key : (di atas)"
 echo "  Username   : $username"
 echo "  Password   : $password"
 echo "  Port       : 22"
-echo "==============================="
+echo "============================="
+echo "© Nexus Vpn"
 echo ""
 read -n 1 -s -r -p "Tekan tombol apa saja untuk kembali ke menu..."
 echo ""
