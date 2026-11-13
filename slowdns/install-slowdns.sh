@@ -41,21 +41,24 @@ apt-get update -y
 apt-get install -y git golang curl iproute2
 
 # 2. Pastikan UDP 53 bebas.
-#    Kalau yang memegang adalah stub listener systemd-resolved (127.0.0.53:53),
+#    Kalau yang memegang hanya stub listener systemd-resolved
+#    (127.0.0.53 / 127.0.0.54 — ss menampilkannya sebagai 127.0.0.53%lo:53),
 #    matikan lewat drop-in (reversibel: hapus file drop-in + restart resolved).
+#    Kalau ada pemakai lain, berhenti dengan error.
 if ss -ulnp 2>/dev/null | grep -q ':53[[:space:]]'; then
   echo "Port UDP 53 sedang dipakai:"
   ss -ulnp 2>/dev/null | grep ':53[[:space:]]' || true
-  if systemctl is-active --quiet systemd-resolved \
-     && ss -ulnp 2>/dev/null | grep -q '127.0.0.53:53'; then
-    echo "Itu stub listener systemd-resolved — dimatikan lewat drop-in."
-    mkdir -p /etc/systemd/resolved.conf.d
-    printf '[Resolve]\nDNS=8.8.8.8\nDNSStubListener=no\n' \
-      > /etc/systemd/resolved.conf.d/slowdns.conf
-    ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
-    systemctl restart systemd-resolved
-    sleep 2
+  if ss -ulnp 2>/dev/null | grep ':53[[:space:]]' | grep -qv 'systemd-resolve'; then
+    echo "ERROR: UDP 53 dipakai sesuatu selain systemd-resolved. Bebaskan dulu port 53." >&2
+    exit 1
   fi
+  echo "Itu stub listener systemd-resolved — dimatikan lewat drop-in."
+  mkdir -p /etc/systemd/resolved.conf.d
+  printf '[Resolve]\nDNS=8.8.8.8\nDNSStubListener=no\n' \
+    > /etc/systemd/resolved.conf.d/slowdns.conf
+  ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+  systemctl restart systemd-resolved
+  sleep 2
 fi
 if ss -ulnp 2>/dev/null | grep -q ':53[[:space:]]'; then
   echo "ERROR: UDP 53 masih dipakai sesuatu yang lain. Bebaskan dulu port 53." >&2
