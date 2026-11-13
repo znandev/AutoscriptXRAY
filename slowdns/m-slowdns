@@ -1,0 +1,73 @@
+#!/bin/bash
+# SlowDNS — buat akun.
+#   Jalankan sebagai root:  m-slowdns
+# Akun yang dibuat = user SSH biasa (dipakai di aplikasi SlowDNS
+# bersama Nameserver + Public key di bawah).
+set -euo pipefail
+
+if [ "$(id -u)" -ne 0 ]; then
+  echo "Jalankan sebagai root (sudo)." >&2
+  exit 1
+fi
+
+if [ ! -f /etc/slowdns/server.pub ]; then
+  echo "SlowDNS belum terinstall."
+  echo "Jalankan dulu: sudo bash slowdns/install-slowdns.sh"
+  exit 1
+fi
+
+NS="$(grep '^Nameserver' /etc/slowdns/info.txt 2>/dev/null | awk '{print $3}')"
+[ -z "$NS" ] && NS="slow.slowaethernal.eu.cc"
+PUBKEY="$(cat /etc/slowdns/server.pub)"
+IP="$(curl -s --max-time 5 ipv4.icanhazip.com 2>/dev/null || hostname -I | awk '{print $1}')"
+
+clear
+echo "===== BUAT AKUN SLOWDNS ====="
+read -rp "Username : " username
+read -rp "Password : " password
+read -rp "Masa aktif (hari, default 30) : " days
+
+case "$days" in
+  ''|*[!0-9]*) days=30 ;;
+esac
+
+if ! [[ "$username" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+  echo "Username hanya boleh huruf, angka, _ dan -." >&2
+  exit 1
+fi
+if [ -z "$password" ]; then
+  echo "Password tidak boleh kosong." >&2
+  exit 1
+fi
+if id "$username" &>/dev/null; then
+  echo "Username $username sudah ada." >&2
+  exit 1
+fi
+
+expiry=$(date -d "+${days} days" +%Y-%m-%d)
+useradd -M -s /bin/false -e "$expiry" "$username"
+echo "$username:$password" | chpasswd
+
+clear
+echo "===== AKUN SLOWDNS AKTIF ====="
+echo "Nameserver : $NS"
+echo "Public key : $PUBKEY"
+echo "-------------------------------"
+echo "Username   : $username"
+echo "Password   : $password"
+echo "Expired    : $expiry ($days hari)"
+echo "-------------------------------"
+echo "Isi di aplikasi SlowDNS:"
+echo "  Nameserver : $NS"
+echo "  Public key : (di atas)"
+echo "  Server     : $IP"
+echo "  Username   : $username"
+echo "  Password   : $password"
+echo "==============================="
+echo ""
+read -n 1 -s -r -p "Tekan tombol apa saja untuk kembali ke menu..."
+echo ""
+if command -v menu >/dev/null 2>&1; then
+  exec menu
+fi
+exit 0

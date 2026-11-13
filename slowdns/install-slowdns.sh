@@ -126,7 +126,14 @@ if ! systemctl is-active --quiet dnstt; then
   exit 1
 fi
 
-# 7. Ringkasan untuk client
+# 7. Pasang perintah submenu m-slowdns (buat akun SlowDNS dari shell)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -f "$SCRIPT_DIR/m-slowdns" ]; then
+  cp -f "$SCRIPT_DIR/m-slowdns" /usr/bin/m-slowdns
+  chmod +x /usr/bin/m-slowdns
+fi
+
+# 8. Ringkasan untuk client
 PUBKEY="$(cat "$KEY_DIR/server.pub")"
 cat > /etc/slowdns/info.txt <<EOF
 SlowDNS (DNSTT) — slowaethernal.eu.cc
@@ -144,6 +151,7 @@ echo "Nameserver : $NS"
 echo "Public key : $PUBKEY"
 echo "Service    : $(systemctl is-active dnstt)"
 echo "Info tersimpan di /etc/slowdns/info.txt"
+echo "Buat akun SlowDNS: jalankan  m-slowdns"
 echo "==========================================================="
 echo "Jangan lupa 2 record di Cloudflare (DNS-only):"
 echo "  A  dns  -> 213.163.201.138"

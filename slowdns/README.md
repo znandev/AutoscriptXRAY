@@ -43,7 +43,20 @@ Kunci privat (`/etc/slowdns/server.key`) **TIDAK BOLEH** dibagikan.
 Cek service: `systemctl status dnstt` — harus `active (running)`.
 Log bila ada masalah: `journalctl -u dnstt -n 50 --no-pager`.
 
-## 3. Client (aplikasi SlowDNS)
+## 3. Buat akun SlowDNS
+
+Dari shell VPS (sebagai root):
+
+```
+m-slowdns
+```
+
+Isi username, password, dan masa aktif (hari). Script membuat user SSH
+dan menampilkan Nameserver + Public key + detail akun — itulah yang
+dimasukkan ke aplikasi SlowDNS. Perintah `m-slowdns` dipasang otomatis
+oleh `install-slowdns.sh` ke `/usr/bin/m-slowdns`.
+
+## 4. Client (aplikasi SlowDNS)
 
 - Nameserver: `slow.slowaethernal.eu.cc`
 - Public key: isi dari `/etc/slowdns/info.txt`
