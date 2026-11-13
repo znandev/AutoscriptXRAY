@@ -253,7 +253,8 @@ echo -e " [3] ${WHITE}VLESS${NC}        [10] ${WHITE}CLEAR RAM${NC}"
 echo -e " [4] ${WHITE}TROJAN${NC}       [11] ${WHITE}REBOOT VPS${NC}"
 echo -e " [5] ${WHITE}SSWS${NC}         [12] ${WHITE}UNINSTALL${NC}"
 echo -e " [6] ${WHITE}WIREGUARD${NC}    [13] ${WHITE}UDP CUSTOM${NC}"
-echo -e " [7] ${WHITE}UDP ZIVPN${NC}    [x] ${WHITE}EXIT${NC}"
+echo -e " [7] ${WHITE}UDP ZIVPN${NC}    [14] ${WHITE}SLOWDNS${NC}"
+echo -e " [x] ${WHITE}EXIT${NC}"
 
 echo -e "${RED}└─────────────────────────────────────────────┘${NC}"
 
@@ -278,6 +279,7 @@ case $menu in
 11) reboot ;;
 12) bash /root/uninstall.sh ;;
 13) systemctl status udp-custom ;;
+14) m-slowdns ;;
 x) exit ;;
 *)
 echo -e "${RED}❌ Invalid menu!${NC}"
